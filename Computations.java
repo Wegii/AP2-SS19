@@ -28,6 +28,7 @@ public class Computations {
 
         //computeCunningham(t_steig_own, t_sink_own, U_own, distance_own, null, eta_luft_own, p_delta, false);
         //computeUncorrected(t_steig_own, t_sink_own, U_own, distance_own, null, eta_luft_own, p_delta, false);
+        computeCorrection(t_steig_own, t_sink_own, U_own, distance_own, null, eta_luft_own, p_delta, false);
         counter = 20;
         System.out.println("\n\n");
 
@@ -47,6 +48,7 @@ public class Computations {
 
         //computeCunningham(t_steig_t1, t_sink_t1, U_t1, distance_t1, null, eta_luft_t1, p_delta, false);
         //computeUncorrected(t_steig_t1, t_sink_t1, U_t1, distance_t1, null, eta_luft_t1, p_delta, false);
+        computeCorrection(t_steig_t1, t_sink_t1, U_t1, distance_t1, null, eta_luft_t1, p_delta, false);
         counter = 40;
         System.out.println("\n\n");
 
@@ -86,13 +88,14 @@ public class Computations {
         double p_ol_t3 = 871d;              // Already given
         p_delta = p_ol_t3 - p_luft_t3;
 
-        computeCunningham(t_steig_t3, t_sink_t3, U_t3, 0, distance_t3, eta_luft_t3, p_delta, true);
+        //computeCunningham(t_steig_t3, t_sink_t3, U_t3, 0, distance_t3, eta_luft_t3, p_delta, true);
         //computeUncorrected(t_steig_t3, t_sink_t3, U_t3, 0, distance_t3, eta_luft_t3, p_delta, true);
+        computeCorrection(t_steig_t3, t_sink_t3, U_t3, 0, distance_t3, eta_luft_t3, p_delta, true);
         System.out.println("\n\n");
 
 
         // Perform analysis on data
-        analysis();
+        //analysis();
     }
 
     @SuppressWarnings("Duplicates")
@@ -192,9 +195,90 @@ public class Computations {
         }
     }
 
+    @SuppressWarnings("Duplicates")
+    private static void computeCorrection(double[] t_steig, double[] t_sink, double[] U, double distance, double[] distances, double eta_luft, double p_delta, boolean customPosition) {
+        /* Compute velocities */
+        double[] v_steig = new double[80];
+        double[] v_sink = new double[80];
+
+        if (!customPosition) {
+            for (int i = 0; i < t_steig.length; i++) {
+                v_steig[i] = -0.5 * distance / t_steig[i];
+                v_sink[i] = 0.5 * distance / t_sink[i];
+            }
+        } else {
+            for (int i = 0; i < t_steig.length; i++) {
+                v_steig[i] = (-1)*distances[i] / t_steig[i];
+                v_sink[i] = distances[i] / t_sink[i];
+            }
+        }
+
+
+        double d = 0.006d;
+        int n = t_steig.length;
+        double s1 = 0.0018, s2 = s1;
+
+        // Compute delta_d
+        //double delta_d = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * (n * Math.pow(d, 2) - Math.pow(d, 2)));
+        double delta_d = 5 * Math.pow(10, -5);
+
+        // Compute delta_U
+        double delta_U = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * sum(U));
+        delta_U = 1;
+
+        // Compute delta_s1
+        double delta_s1;
+        if (customPosition)
+            delta_s1 = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * sum(distances));
+        else
+            delta_s1 = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * (n * Math.pow(d, 2) - Math.pow(distance, 2)));
+        delta_s1 = 5 * Math.pow(10, -5);
+
+        // Compute delta_s2
+        double delta_s2 = delta_s1;
+
+        // Compute delta_t1
+        double delta_t1 = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * sum(t_steig));
+        delta_t1 = 0.5;
+
+        // Compute delta_t2
+        double delta_t2 = (0.1 / Math.sqrt(n)) * Math.sqrt((1d / (n*(n-1))) * sum(t_sink));
+        delta_t2 = 0.5;
+
+        double pi = 3.1415d;
+        double g = 9.81d;
+        double dg;
+
+        for (int i = 0; i < n; i++) {
+
+            dg = Math.abs(delta_d * ((9 * pi) / 2) * (1/U[i]) * Math.sqrt((Math.pow(eta_luft, 3) * (v_steig[i] + v_sink[i])) / (p_delta*g))*(v_steig[i] - v_sink[i]));
+            dg += Math.abs(delta_U * ((9 * pi) / 2) * (1/Math.pow(U[i], 2)) * Math.sqrt((Math.pow(eta_luft, 3) * (v_steig[i] + v_sink[i])) / (p_delta*g))*(v_steig[i] - v_sink[i]));
+
+            dg += Math.abs(delta_s1 * (0.5d*9*pi)*(d/U[i])*Math.sqrt((Math.pow(eta_luft, 3)/(p_delta*g))) * ((s2*t_steig[i] + 3*t_sink[i]*s1) / (2*t_sink[i]*Math.pow(t_steig[i], 2) * Math.sqrt((s2/t_sink[i]) + (s1 / t_steig[i])))));
+            dg += Math.abs(delta_s2 * (0.5d*9*pi)*(d/U[i])*Math.sqrt((Math.pow(eta_luft, 3)/(p_delta*g))) * ((-s1*t_sink[i] - 3*t_steig[i]*s2) / (2*t_steig[i]*Math.pow(t_sink[i], 2) * Math.sqrt((s1/t_steig[i]) + (s2 / t_sink[i])))));
+
+            dg += Math.abs(delta_t1 * (0.5d*9*pi)*(d/U[i])*Math.sqrt((Math.pow(eta_luft, 3)/(p_delta*g))) * ((s1*(s2*t_steig[i] + 3*t_sink[i]*s1)) / (2*t_sink[i]*Math.pow(t_steig[i], 3) * Math.sqrt((s2/t_sink[i]) + (s1 / t_steig[i])))));
+            dg += Math.abs(delta_t2 * (0.5d*9*pi)*(d/U[i])*Math.sqrt(Math.pow(eta_luft, 3)/(p_delta*g)) * ((s2 * (s1*t_sink[i] + 3*t_steig[i]*s2)) / (2*t_steig[i]*Math.pow(t_sink[i], 3) * Math.sqrt((s1/t_steig[i]) + (s2 / t_sink[i])))));
+            System.out.println(dg / Math.pow(10, -19));
+        }
+
+    }
+
+    private static double sum(double[] values) {
+        double val = 0, interim = 0;
+
+        for (int i = 0; i < values.length; i++)
+            val += Math.pow(values[i], 2);
+
+        for (int i = 0; i < values.length; i++)
+            interim += values[i];
+
+        return (values.length * val) - Math.pow(interim, 2);
+    }
+
     private static void analysis () {
         // Print charge and radius
-        printGeneral();
+        //printGeneral();
 
         // Print number of occurrences
         //printOccurrences();
