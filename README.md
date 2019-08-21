@@ -4,5 +4,5 @@ In diesem Repository sind alle Dateien vorhanden, die im Laufe des Anfängerprak
 Weitere Informationen findet man [hier](https://www.ph.tum.de/academics/org/labs/ap/ "Homepage des Praktikums").
 
 ### Ordnerstruktur
-- [`code/`](Sourcecode/): Alle zu den Ausarbeitung erstellen Programme.
-- [`ausarbeitung/`](Ausarbeitungen/): Alle Ausarbeitungen, mit weiteren zugehörigen Dateien 
+- [`Sourcecode/`](code/): Alle zu den Ausarbeitung erstellen Programme.
+- [`Ausarbeitungen/`](ausarbeitungen/): Alle Ausarbeitungen, mit weiteren zugehörigen Dateien 
