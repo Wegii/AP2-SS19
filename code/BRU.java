@@ -1,4 +1,4 @@
-public class Computations {
+public class BRU {
 
     public static double[] qs = new double[82];
     public static double[] rad = new double[82];

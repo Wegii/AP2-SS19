@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
-public class Computations {
+public class ELE {
 
     public static double[] qs = new double[82];
     public static double[] rad = new double[82];
