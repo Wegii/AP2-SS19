@@ -1,8 +1,8 @@
 # AP2-SS19
-### Einleitung
-In diesem Repository sind alle Dateien vorhanden, die im Laufe des Anfängerpraktikums - Teil2 erstellt wurden.
-Weitere Informationen findet man [hier](https://www.ph.tum.de/academics/org/labs/ap/ "Homepage des Praktikums").
+### Introduction
+This repository contains all files that were created during the beginner's internship - part 2.
+Further information can be found [here](https://www.ph.tum.de/academics/org/labs/ap/ "Homepage of the internship").
 
-### Ordnerstruktur
-- [`Sourcecode/`](code/): Alle zu den Ausarbeitung erstellen Programme.
-- [`Ausarbeitungen/`](ausarbeitungen/): Alle Ausarbeitungen, mit weiteren zugehörigen Dateien 
+### Folder structure
+- [`Sourcecode/`](code/): All scripts created.
+- [paper/`](paper/): All papers, and associated files. 
